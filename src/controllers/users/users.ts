@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import db from '../../services/db';
+import db from '../../database/db';
 import { makeResponse ,makeErrorResponse, makeLog } from '../../utils/utils';
 import errors from '../../models/errors/errors';
 

@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import { QueryResult } from 'pg';
-import db from '../../services/db';
+import db from '../../database/db';
 import { makeResponse ,makeErrorResponse, makeLog } from '../../utils/utils';
 import { Menu } from '../../models/menus/menus';
 import errors from '../../models/errors/errors';

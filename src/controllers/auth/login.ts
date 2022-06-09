@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { makeErrorResponse, makeLog, makeResponse } from '../../utils/utils';
-import db from '../../services/db';
+import db from '../../database/db';
 import { User } from '../../models/user/user';
 import errors from '../../models/errors/errors';
 import bcrypt from 'bcrypt';
