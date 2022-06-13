@@ -1,8 +1,7 @@
 import { Response, Request, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import errors from '../models/errors/errors';
-import db from '../services/db';
-import { makeResponse, makeErrorResponse, makeLog } from '../utils/utils';
+import Auth from '../database/Auth';
+import { makeLog } from '../utils/utils';
 
 const tokenGenSecret = process.env.TOKEN_GEN_SECRET ? process.env.TOKEN_GEN_SECRET : '';
 
@@ -19,62 +18,103 @@ function getDecodedTokenValues(decodedToken: JwtPayload | string) {
   return decoded;
 }
 
-export function verifyToken(req: Request, res: Response, next: NextFunction) {
+function verifyToken(req: Request, res: Response, next: NextFunction) {
   const token: string = req.cookies.token;
   jwt.verify(token ? token : '', tokenGenSecret, function(err, decoded) {
     if (err) {
       makeLog('verify-token', err);
       switch (err.message) {
         case 'jwt must be provided':
-          return makeResponse(res, 401, makeErrorResponse(errors.message.unauthenticated, errors.code.unauthenticated));
+          return res.status(401).send({
+            status: 'Bad request',
+            data: null,
+            message: 'No token provided',
+          });
         case 'jwt expired':
           if (decoded) {
             const { user_id } = getDecodedTokenValues(decoded);
-            const deleteLogin = `
-              DELETE FROM logins_temp l WHERE l.user_id = $1 AND l.token = $2
-            `;
-            db.queryPromise(deleteLogin, [user_id, token])
-              .then(_deleteLoginResult => {
-                return makeResponse(res, 403, makeErrorResponse(errors.message.expiredToken, errors.code.expiredToken));
+            Auth.deleteLoginTemp(user_id, token)
+              .then(result => {
+                return res.status(401).send({
+                  status: 'Bad request',
+                  data: null,
+                  message: 'Expired token', 
+                });
               })
-              .catch((err: Error) => {
-                makeLog('delete-token', { name: err.name, message: err.message, stack: err.stack });
-                return makeResponse(res, 400, makeErrorResponse(errors.message.badRequest, errors.code.general));
+              .catch(e => {
+                const url = new URL(req.url, `http://${req.headers.host}`);
+                console.log({
+                  status: 'error',
+                  url,
+                  error: e,
+                });
+                return res.status(400).send({
+                  status: 'Bad request',
+                  data: null,
+                  message: "Something wen't wrong, please try again later",
+                });
               });
           } else {
-            return makeResponse(res, 403, makeErrorResponse(errors.message.expiredToken, errors.code.expiredToken));
+            return res.status(401).send({
+              status: 'Bad request',
+              data: null,
+              message: 'Expired token', 
+            });
           }
         case 'invalid signature':
-          return makeResponse(res, 403, makeErrorResponse(errors.message.invalidAuthToken, errors.code.invalidAuthToken));
+          return res.status(401).send({
+            status: 'Bad request',
+            data: null,
+            message: 'Invalid token', 
+          });
         default:
-          return makeResponse(res, 401, makeErrorResponse(errors.message.unauthenticated, errors.code.unauthenticated));
+          return res.status(401).send({
+            status: 'Bad request',
+            data: null,
+            message: 'Invalid token', 
+          });
       }
     } else {
       if (decoded) {
         const { user_id, role_id } = getDecodedTokenValues(decoded);
-        const loginQuery = `
-          SELECT l.id, l.user_id, l.token
-          FROM logins_temp l
-          WHERE l.user_id = $1 AND l.token = $2
-        `;
-        db.queryPromise(loginQuery, [user_id, token])
-          .then(loginQueryResult => {
-            if (loginQueryResult.rowCount === 1) {
+        Auth.getLoginTempByUserIdAndToken(user_id, token)
+          .then(result => {
+            if (result.rowCount === 1) {
               req.headers['user_id'] = user_id;
               req.headers['role_id'] = role_id;
               req.headers['user_token'] = token;
               return next();
-            } else {
-              return makeResponse(res, 401, makeErrorResponse(errors.message.unauthenticated, errors.code.unauthenticated));
             }
+            return res.status(401).send({
+              status: 'Bad request',
+              data: null,
+              message: 'Invalid token', 
+            });
           })
-          .catch((err: Error) => {
-            makeLog('check-token', { name: err.name, message: err.message, stack: err.stack });
-            return makeResponse(res, 400, makeErrorResponse(errors.message.badRequest, errors.code.general));
+          .catch(e => {
+            const url = new URL(req.url, `http://${req.headers.host}`);
+            console.log({
+              status: 'error',
+              url,
+              error: e,
+            });
+            return res.status(400).send({
+              status: 'Bad request',
+              data: null,
+              message: "Something wen't wrong, please try again later",
+            });
           });
       } else {
-        return makeResponse(res, 401, makeErrorResponse(errors.message.unauthenticated, errors.code.unauthenticated));
+        return res.status(401).send({
+          status: 'Bad request',
+          data: null,
+          message: 'Invalid token', 
+        });
       }
     }
   });
 }
+
+const middlewares = { verifyToken };
+
+export default middlewares;
