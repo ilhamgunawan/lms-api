@@ -1,5 +1,8 @@
 import User, { UpdateUser } from "../database/User"
+import Role from '../database/Role'
+import UserSetting from '../database/UserSetting'
 import bcrypt from 'bcrypt';
+import { client } from '../database/db';
 
 const getAllUser = async () => {
   const result = await User.getAllUser();
@@ -11,10 +14,15 @@ const getUserByID = async (id: string) => {
   return result.rowCount === 1 ? result.rows[0] : null;
 }
 
-const createUser = async (name: string, email: string) => {
+const createUser = async (name: string, email: string, role: string) => {
   const defaultPassword = process.env.DEFAULT_CREATE_USER_PASS as string;
   const password = bcrypt.hashSync(defaultPassword, 10);
   const result = await User.createUser({name, email, password});
+  const createdUser = result.rows[0] as {id: string; name: string; email: string};
+  const getRoleResult = await Role.getRoleByName(role);
+  const roleByName = getRoleResult.rows[0] as {id: string; name: string};
+  await Role.createRoleToUser(roleByName.id, createdUser.id);
+  await UserSetting.createSetting('default_role', 'default_role', roleByName.id, createdUser.id);
   return result.rowCount;
 }
 

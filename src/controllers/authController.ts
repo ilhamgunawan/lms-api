@@ -9,7 +9,7 @@ const createLogin = async (req: Request, res: Response) => {
       const {login, token} = await authService.createLogin(email, password);
       if (login && token) {
         return res.status(200)
-          .cookie('token', token, { httpOnly: true, path: '/', domain: '.appspot.com', secure: true })
+          .cookie('token', token, { httpOnly: true, path: '/', secure: true })
           .send({
             status: 'Ok',
             data: login,

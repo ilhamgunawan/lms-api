@@ -52,8 +52,9 @@ const createUser = async (req: Request, res: Response) => {
   try {
     const name: string = req.body['name'];
     const email: string = req.body['email'];
-    if (name && email) {
-      const result = await userService.createUser(name, email);
+    const role: string = req.body['role'];
+    if (name && email && role) {
+      const result = await userService.createUser(name, email, role);
       if (result === 1) {
         return res.status(200).send({
           status: 'Ok',

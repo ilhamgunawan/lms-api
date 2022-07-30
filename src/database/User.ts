@@ -38,6 +38,7 @@ function createUser(user: CreateUser) {
       INSERT INTO users
       (name, email, password, updated_at, deleted_at)
       values($1, $2, $3, NULL, NULL)
+      RETURNING *
     `,
     [user.name, user.email, user.password],
   );
