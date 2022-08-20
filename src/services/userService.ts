@@ -10,8 +10,27 @@ const getAllUser = async () => {
 }
 
 const getUserByID = async (id: string) => {
-  const result = await User.getUserByID(id);
-  return result.rowCount === 1 ? result.rows[0] : null;
+  type Role = {
+    id: string,
+    name: string,
+    role_id: string,
+  };
+  type Result = {
+    id: string,
+    email: string,
+    name: string,
+    roles: Array<Role>,
+  }
+  const user = await User.getUserByID(id);
+  const roles = await Role.getUserRoles(id);
+  const result: Result | null = 
+    user.rowCount === 1
+    ? {
+      ...user.rows[0],
+      roles: roles.rows,
+    }
+    : null
+  return result;
 }
 
 const createUser = async (name: string, email: string, role: string) => {

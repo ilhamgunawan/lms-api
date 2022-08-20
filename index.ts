@@ -13,7 +13,7 @@ const app: Express = express();
 const port = process.env.PORT === undefined ? '7002' : process.env.PORT;
 
 app.use(cors({
-  origin: 'http://localhost:7001',
+  origin: 'http://localhost:4200',
   credentials: true,
 }));
 app.use(express.json());
