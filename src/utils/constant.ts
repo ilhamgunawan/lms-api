@@ -2,6 +2,8 @@ export const messages = {
   general: 'Internal server error, please try again later.',
   missingFields: (fields: string) => `Missing fields: ${fields}`,
   notFound: 'No such records found.',
+  badTimestampFormat: 'Invalid timestamp format.',
+  duplicateUsername: (username: string) => `${username} has been taken, please use another username.`,
 };
 
 export const responseStatus = {
@@ -18,4 +20,6 @@ export const responseStatus = {
 export const errorName = {
   missingFields: 'MissingField',
   notFound: 'NotFound',
+  badTimestampFormat: 'BadTimestampFormat',
+  duplicateUsername: 'DuplicateUsername',
 };
