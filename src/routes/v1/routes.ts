@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import authController from '../../controllers/authController';
+import authController from '../../controllers/auth';
 import userController from '../../controllers/user';
 import errorController from '../../controllers/errorController';
 import middlewares from '../../middlewares/middlewares';
@@ -10,10 +10,11 @@ const {verifyToken} = middlewares;
 /**
  * Authentication
  */
-router.post('/api/v1/auth/login', authController.createLogin);
-router.delete('/api/v1/auth/logout', verifyToken, authController.deleteLogin);
-router.get('/api/v1/auth/role', verifyToken, authController.getCurrentRole);
-router.get('/api/v1/auth/session', verifyToken, authController.getSessionValidation);
+// router.post('/api/v1/auth/login', authController.createLogin);
+// router.delete('/api/v1/auth/logout', verifyToken, authController.deleteLogin);
+// router.get('/api/v1/auth/role', verifyToken, authController.getCurrentRole);
+// router.get('/api/v1/auth/session', verifyToken, authController.getSessionValidation);
+router.post('/api/v1/auth/login', authController.login);
 
 /**
  * Users
