@@ -1,5 +1,7 @@
 import knex from '../connection';
 import { v4 as uuidv4 } from 'uuid';
+import { messages } from '../utils/constant';
+import { serviceErrorReporter } from '../utils/utils';
 
 export interface CreateUser {
   first_name: string
@@ -16,7 +18,12 @@ export interface User {
   date_of_birth: string
 }
 
-export async function createUserService(user: CreateUser): Promise<User | null> {
+interface CreateUserResult {
+  data?: User
+  err?: Error
+}
+
+export async function createUserService(user: CreateUser): Promise<CreateUserResult> {
   return knex.transaction<User[]>((trx) => {
     knex('user_account')
       .transacting(trx)
@@ -28,16 +35,22 @@ export async function createUserService(user: CreateUser): Promise<User | null> 
       .then(trx.commit)
       .catch(trx.rollback);
   })
-  .then((inserts) => inserts[0])
+  .then((inserts) => ({ data: inserts[0] }))
   .catch(e => {
+    let err = new Error();
+    let message = messages.general;
 
-    console.log(`
-      Error:
-        - service: createUser
-        - table: user_account
-        - ${e.stack}\n
-    `);
+    if (e instanceof Error) {
+      err = e
+      message = err.message;
+    }
 
-    return null;
+    serviceErrorReporter({
+      service: 'createUser',
+      table: 'user_account',
+      message,
+    });
+
+    return { err };
   });
 }
