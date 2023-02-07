@@ -1,6 +1,6 @@
 import knex from '../connection';
 import { v4 as uuidv4 } from 'uuid';
-import { messages } from '../utils/constant';
+import { messages, errorName } from '../utils/constant';
 import { serviceErrorReporter } from '../utils/utils';
 
 interface UserAccount {
@@ -34,6 +34,21 @@ export default class UserAccountService {
     date_of_birth: 'date_of_birth',
   };
 
+  static async getById(userId: string): Promise<Result<UserAccount>> {
+    const { id, first_name, last_name, gender, date_of_birth } = this.columns;
+    return knex.transaction<UserAccount[]>((trx) => {
+      knex
+        .select(id, first_name, last_name, gender, date_of_birth)
+        .from(this.table)
+        .where({ id: userId })
+        .transacting(trx)
+        .then(trx.commit)
+        .catch(trx.rollback);
+    })
+    .then((inserts) => ({ data: inserts[0] }))
+    .catch(e => this.errorHandler<UserAccount>(e, 'getById'));
+  }
+
   static async post(user: CreateUserAccount): Promise<Result<UserAccount>> {
     return knex.transaction<UserAccount[]>((trx) => {
       knex(this.table)
@@ -61,8 +76,13 @@ export default class UserAccountService {
     let message = messages.general;
 
     if (e instanceof Error) {
-      err = e
+      err = e;
       message = err.message;
+
+      if (method === 'getById' && message.includes('invalid input syntax for type uuid')) {
+        err.name = errorName.notFound;
+        err.message = messages.notFound;
+      }
     }
 
     serviceErrorReporter({

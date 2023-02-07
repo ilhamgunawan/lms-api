@@ -23,6 +23,7 @@ router.get('/api/v1/auth/session', verifyToken, authController.getSessionValidat
 // router.post('/api/v1/users/create', verifyToken, userController.createUser);
 // router.patch('/api/v1/users/:id/update', verifyToken, userController.updateUser);
 // router.delete('/api/v1/users/:id/delete', verifyToken, userController.deleteUser);
+router.get('/api/v1/users/:id', userController.getUserById);
 router.post('/api/v1/users/create', userController.createUser);
 
 /**

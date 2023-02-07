@@ -1,6 +1,7 @@
 export const messages = {
   general: 'Internal server error, please try again later.',
   missingFields: (fields: string) => `Missing fields: ${fields}`,
+  notFound: 'No such records found.',
 };
 
 export const responseStatus = {
@@ -16,4 +17,5 @@ export const responseStatus = {
 
 export const errorName = {
   missingFields: 'MissingField',
+  notFound: 'NotFound',
 };
