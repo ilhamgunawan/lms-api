@@ -25,7 +25,7 @@ interface CreateUserResult {
 
 export async function createUserService(user: CreateUser): Promise<CreateUserResult> {
   return knex.transaction<User[]>((trx) => {
-    knex('user_account')
+    knex('user_accountt')
       .transacting(trx)
       .insert({
         id: uuidv4(),

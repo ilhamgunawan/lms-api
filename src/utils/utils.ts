@@ -42,8 +42,10 @@ interface ServiceErrorReporter {
 export function serviceErrorReporter(params: ServiceErrorReporter): void {
   console.log(`
     Error:
-      - service: ${params.service}
-      - table: ${params.table}
-      - message: ${params.message}\n
+      - Type        : service-error
+      - ServiceName : ${params.service}
+      - Table       : ${params.table}
+      - Timestamp   : ${new Date()}
+      - Message     : ${params.message}\n
   `);
 }
