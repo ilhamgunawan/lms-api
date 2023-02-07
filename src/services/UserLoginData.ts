@@ -52,6 +52,23 @@ export default class UserLoginDataService {
       });
   }
 
+  static async getByUsername(trx: Knex.Transaction, user_name: string): Promise<Result<UserLoginData>> {
+    return trx.select(this.columns.user_id, this.columns.user_name, this.columns.psw_hash)
+      .from(this.table)
+      .where({ user_name })
+      .returning<UserLoginData[]>([
+        this.columns.id,
+        this.columns.user_id,
+        this.columns.user_name,
+        this.columns.psw_hash,
+      ])
+      .then((rows) => ({ data: rows[0] }))
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserLoginData>(e, 'getByUsername');
+      });
+  }
+
   private static errorHandler<T>(e: unknown, method: string): Result<T> {
     let err = new Error();
     let message = messages.general;
