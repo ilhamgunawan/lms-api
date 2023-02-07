@@ -1,4 +1,5 @@
 import knex from '../connection';
+import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 import { messages, errorName } from '../utils/constant';
 import { serviceErrorReporter } from '../utils/utils';
@@ -49,26 +50,26 @@ export default class UserAccountService {
     .catch(e => this.errorHandler<UserAccount>(e, 'getById'));
   }
 
-  static async post(user: CreateUserAccount): Promise<Result<UserAccount>> {
-    return knex.transaction<UserAccount[]>((trx) => {
-      knex(this.table)
-        .transacting(trx)
-        .insert({
-          id: uuidv4(),
-          ...user,
-        })
-        .returning([
-          this.columns.id, 
-          this.columns.first_name, 
-          this.columns.last_name, 
-          this.columns.gender, 
-          this.columns.date_of_birth
-        ])
-        .then(trx.commit)
-        .catch(trx.rollback);
-    })
-    .then((inserts) => ({ data: inserts[0] }))
-    .catch(e => this.errorHandler<UserAccount>(e, 'post'));
+  static async post(trx: Knex.Transaction, user: CreateUserAccount): Promise<Result<UserAccount>> {
+    return trx.insert({
+        id: uuidv4(),
+        ...user,
+      })
+      .into(this.table)
+      .returning<UserAccount[]>([
+        this.columns.id, 
+        this.columns.first_name, 
+        this.columns.last_name, 
+        this.columns.gender, 
+        this.columns.date_of_birth
+      ])
+      .then((rows) => {
+        return { data: rows[0] };
+      })
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserAccount>(e, 'post');
+      });
   }
 
   private static errorHandler<T>(e: unknown, method: string): Result<T> {
@@ -82,6 +83,11 @@ export default class UserAccountService {
       if (method === 'getById' && message.includes('invalid input syntax for type uuid')) {
         err.name = errorName.notFound;
         err.message = messages.notFound;
+      }
+
+      if (method === 'post' && message.includes('invalid input syntax for type timestamp')) {
+        err.name = errorName.badTimestampFormat;
+        err.message = messages.badTimestampFormat;
       }
     }
 
