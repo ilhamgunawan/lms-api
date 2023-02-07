@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createUserService } from '../services/createUser';
+import UserAccountService from '../services/UserAccount';
 import { messages, responseStatus, errorName } from '../utils/constant';
 
 const { ok, badRequest, internalServerError } = responseStatus;
@@ -21,7 +21,7 @@ async function createUser(req: Request, res: Response) {
       throw err;
     };
 
-    const result = await createUserService({
+    const result = await UserAccountService.post({
       first_name: body.first_name,
       last_name: body.last_name,
       gender: body.gender,
