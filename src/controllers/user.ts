@@ -1,17 +1,25 @@
 import { Request, Response } from 'express';
 import { createUserService } from '../services/createUser';
+import { messages, responseStatus, errorName } from '../utils/constant';
+
+const { ok, badRequest, internalServerError } = responseStatus;
 
 async function createUser(req: Request, res: Response) {
   try {
     const body = req.body;
-    let errors = [];
-  
-    if (!body.first_name) errors.push('first_name (required)');
-    if (!body.last_name) errors.push('last_name (required)');
-    if (!body.gender) errors.push('gender (required)');
-    if (!body.date_of_birth) errors.push('date_of_birth (required)');
-
-    if (errors.length) throw Error(JSON.stringify(errors));
+    const missingFields = [];
+    
+    if (!body.first_name) missingFields.push('first_name');
+    if (!body.last_name) missingFields.push('last_name');
+    if (!body.gender) missingFields.push('gender');
+    if (!body.date_of_birth) missingFields.push('date_of_birth');
+    
+    if (missingFields.length) {
+      const err = new Error();
+      err.name = errorName.missingFields;
+      err.message = JSON.stringify(missingFields);
+      throw err;
+    };
 
     const result = await createUserService({
       first_name: body.first_name,
@@ -20,20 +28,26 @@ async function createUser(req: Request, res: Response) {
       date_of_birth: body.date_of_birth,
     });
 
-    if (!result) throw Error(JSON.stringify(['Server error, please try again later']));
+    if (result.err) {
+      throw result.err;
+    };
     
-    return res.status(200).send(result);
+    return res.status(ok).send(result);
 
-  } catch(e: any) {
-    const err = e.stack.split('Error:');
+  } catch(e) {
+    let message = messages.general;
+    let status = internalServerError;
 
-    const start = err[1].indexOf('[');
-    const end = err[1].indexOf(']');
+    if (e instanceof Error) {
 
-    const errs = JSON.parse(err[1].slice(start, end + 1));
-    const message = `${errs.join(', ')}`;
+      if (e.name === errorName.missingFields) {
+        message = messages.missingFields(JSON.parse(e.message).join(', '));
+        status = badRequest;
+      }
 
-    return res.status(400).send({ message });
+    }
+
+    return res.status(status).send({ message });
   }
 }
 
