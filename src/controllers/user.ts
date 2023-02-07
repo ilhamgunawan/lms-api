@@ -7,6 +7,9 @@ import ErrorReporterService from '../services/ErrorReporter';
 import { messages, responseStatus, errorName } from '../utils/constant';
 
 async function getUserById(req: Request, res: Response) {
+  const trxProvider = knex.transactionProvider();
+  const trx = await trxProvider();
+
   try {
     const userId = req.params.id;
     const missingFields = [];
@@ -19,7 +22,7 @@ async function getUserById(req: Request, res: Response) {
       throw err;
     }
 
-    const result = await UserAccountService.getById(userId);
+    const result = await UserAccountService.getById(trx, userId);
 
     if (result.err) throw result.err;
     if (!result.data) {

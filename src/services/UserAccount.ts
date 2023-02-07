@@ -35,19 +35,23 @@ export default class UserAccountService {
     date_of_birth: 'date_of_birth',
   };
 
-  static async getById(userId: string): Promise<Result<UserAccount>> {
+  static async getById(trx: Knex.Transaction, userId: string): Promise<Result<UserAccount>> {
     const { id, first_name, last_name, gender, date_of_birth } = this.columns;
-    return knex.transaction<UserAccount[]>((trx) => {
-      knex
-        .select(id, first_name, last_name, gender, date_of_birth)
-        .from(this.table)
-        .where({ id: userId })
-        .transacting(trx)
-        .then(trx.commit)
-        .catch(trx.rollback);
-    })
-    .then((inserts) => ({ data: inserts[0] }))
-    .catch(e => this.errorHandler<UserAccount>(e, 'getById'));
+    return trx.select(id, first_name, last_name, gender, date_of_birth)
+      .from(this.table)
+      .where({ id: userId })
+      .returning<UserAccount[]>([
+        id,
+        first_name,
+        last_name,
+        gender,
+        date_of_birth,
+      ])
+      .then((rows) => ({ data: rows[0] }))
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserAccount>(e, 'getById');
+      });
   }
 
   static async post(trx: Knex.Transaction, user: CreateUserAccount): Promise<Result<UserAccount>> {
