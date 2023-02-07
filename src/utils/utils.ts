@@ -32,20 +32,3 @@ export function makeErrorResponse(message: string, code: string) {
 export function makeResponse(res: Response, status: number, body: any) {
   return res.status(status).send(body);
 }
-
-interface ServiceErrorReporter {
-  service: string
-  table: string
-  message: string
-}
-
-export function serviceErrorReporter(params: ServiceErrorReporter): void {
-  console.log(`
-    Error:
-      - Type        : service-error
-      - ServiceName : ${params.service}
-      - Table       : ${params.table}
-      - Timestamp   : ${new Date()}
-      - Message     : ${params.message}\n
-  `);
-}

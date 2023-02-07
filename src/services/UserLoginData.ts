@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 import { messages, errorName } from '../utils/constant';
-import { serviceErrorReporter } from '../utils/utils';
+import ErrorReporterService from './ErrorReporter';
 
 interface UserLoginData {
   id: string
@@ -65,7 +65,7 @@ export default class UserLoginDataService {
       }
     }
 
-    serviceErrorReporter({
+    ErrorReporterService.serviceError({
       service: `${this.service}.${method}`,
       table: this.table,
       message,
