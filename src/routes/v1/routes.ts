@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import authController from '../../controllers/auth';
+import AuthController from '../../controllers/Auth';
 import UserController from '../../controllers/User';
 import errorController from '../../controllers/errorController';
 import middlewares from '../../middlewares/middlewares';
@@ -16,7 +16,7 @@ const { verifyCredentials } = authMiddlewares;
 // router.delete('/api/v1/auth/logout', verifyToken, authController.deleteLogin);
 // router.get('/api/v1/auth/role', verifyToken, authController.getCurrentRole);
 // router.get('/api/v1/auth/session', verifyToken, authController.getSessionValidation);
-router.post('/api/v1/auth/login', authController.login);
+router.post('/api/v1/auth/login', AuthController.login.bind(AuthController));
 
 /**
  * Users
@@ -26,8 +26,8 @@ router.post('/api/v1/auth/login', authController.login);
 // router.post('/api/v1/users/create', verifyToken, userController.createUser);
 // router.patch('/api/v1/users/:id/update', verifyToken, userController.updateUser);
 // router.delete('/api/v1/users/:id/delete', verifyToken, userController.deleteUser);
-router.get('/api/v1/users/:id', verifyCredentials, UserController.getUserById);
-router.post('/api/v1/users/create', verifyCredentials, UserController.createUser);
+router.get('/api/v1/users/:id', verifyCredentials, UserController.getUserById.bind(UserController));
+router.post('/api/v1/users/create', verifyCredentials, UserController.createUser.bind(UserController));
 
 /**
  * Invalid Route

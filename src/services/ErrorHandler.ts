@@ -43,6 +43,14 @@ export default class ErrorHandlerService {
       if (e.name === errorName.notFound) {
         this.status = responseStatus.notFound;
       }
+
+      if (e.name === errorName.invalidLogin) {
+        this.status = responseStatus.badRequest;
+      }
+
+      if (e.name === errorName.invalidJwtSecret) {
+        this.message = messages.general;
+      }
     }
 
     ErrorReporterService.controllerError({
