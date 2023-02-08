@@ -4,8 +4,10 @@ export const messages = {
   notFound: 'No such records found.',
   badTimestampFormat: 'Invalid timestamp format.',
   duplicateUsername: (username: string) => `${username} has been taken, please use another username.`,
+  invalidAuthHeader: 'No token provided.',
   invalidLogin: 'Username or password not match.',
   invalidJwtSecret: 'Jwt secret is invalid or undefined.',
+  invalidToken: 'Invalid token.',
 };
 
 export const responseStatus = {
@@ -24,6 +26,8 @@ export const errorName = {
   notFound: 'NotFound',
   badTimestampFormat: 'BadTimestampFormat',
   duplicateUsername: 'DuplicateUsername',
+  invalidAuthHeader: 'InvalidAuthHeader',
   invalidLogin: 'InvalidLogin',
   invalidJwtSecret: 'InvalidJwtSecret',
+  invalidToken: 'InvalidToken',
 };
