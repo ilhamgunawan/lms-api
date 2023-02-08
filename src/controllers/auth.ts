@@ -83,4 +83,45 @@ export default class AuthController {
       });
     }
   }
+
+  static async validateToken(req: Request, res: Response) {
+    try {
+      const body = req.body;
+      const missingFields = [];
+      const result: Record<string, any> = {};
+
+      if (!body.token) missingFields.push('token');
+
+      if (missingFields.length) {
+        const err = new Error();
+        err.name = errorName.missingFields;
+        err.message = JSON.stringify(missingFields);
+        throw err;
+      }
+
+      const verifyTokenResult = await AuthService.verifyToken(body.token);
+
+      if (verifyTokenResult.err) throw verifyTokenResult.err;
+
+      if (!verifyTokenResult.data) {
+        const err = new Error(messages.invalidToken);
+        err.name = errorName.invalidToken;
+        throw err;
+      }
+
+      result.data = {
+        token: verifyTokenResult.data,
+      };
+      
+      return res.status(responseStatus.ok).send(result);
+    } catch(e) {
+      const errorHandler = new ErrorHandlerService();
+      return await errorHandler.controllerHandler({
+        req,
+        res,
+        e,
+        controller: `${this.controller}.validateToken`,
+      });
+    } 
+  }
 }

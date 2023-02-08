@@ -60,6 +60,14 @@ export default class AuthService {
       if (message.includes(messages.invalidJwtSecret)) {
         err.name = errorName.invalidJwtSecret;
       }
+
+      if (e.message.includes('jwt malformed')) {
+        err.name = errorName.invalidToken;
+      }
+
+      if (e.message.includes('jwt expired')) {
+        err.name = errorName.tokenExpired;
+      }
     }
 
     ErrorReporterService.serviceError({

@@ -17,6 +17,7 @@ const { verifyCredentials } = authMiddlewares;
 // router.get('/api/v1/auth/role', verifyToken, authController.getCurrentRole);
 // router.get('/api/v1/auth/session', verifyToken, authController.getSessionValidation);
 router.post('/api/v1/auth/login', AuthController.login.bind(AuthController));
+router.post('/api/v1/auth/validate', AuthController.validateToken.bind(AuthController));
 
 /**
  * Users

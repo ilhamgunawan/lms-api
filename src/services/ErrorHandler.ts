@@ -6,7 +6,7 @@ import { responseStatus, messages, errorName } from "../utils/constant";
 export interface ControllerErrorHandler {
   req: Request
   res: Response
-  trx: Knex.Transaction
+  trx?: Knex.Transaction
   e: unknown
   controller: string
 }
@@ -51,6 +51,16 @@ export default class ErrorHandlerService {
       if (e.name === errorName.invalidJwtSecret) {
         this.message = messages.general;
       }
+
+      if (e.name === errorName.invalidToken) {
+        this.status = responseStatus.unauthorized;
+        this.message = messages.invalidToken;
+      }
+
+      if (e.name === errorName.tokenExpired) {
+        this.status = responseStatus.unauthorized;
+        this.message = messages.tokenExpired;
+      }
     }
 
     ErrorReporterService.controllerError({
@@ -58,7 +68,7 @@ export default class ErrorHandlerService {
       message: this.message,
     });
 
-    await trx.rollback();
+    if (trx) await trx.rollback();
 
     return res.status(this.status).send({ message: this.message });
   }
