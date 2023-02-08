@@ -1,3 +1,4 @@
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { messages, errorName } from '../utils/constant';
 import ErrorReporterService from './ErrorReporter';
@@ -34,6 +35,20 @@ export default class AuthService {
     });
   }
 
+  static async verifyToken(token: string): Promise<Result<string | jwt.JwtPayload>> {
+    return new Promise((resolve) => {
+      if (!jwtSecret) {
+        resolve(this.errorHandler(new Error(messages.invalidJwtSecret), 'verifyToken'));
+      } else {
+        jwt.verify(token, jwtSecret, (err, decoded) => {
+          if (err) resolve(this.errorHandler(err, 'verifyToken'));
+
+          resolve({ data: decoded });
+        });
+      }
+    });
+  }
+
   private static errorHandler<T>(e: unknown, method: string): Result<T> {
     let err = new Error();
     let message = messages.general;
@@ -42,7 +57,7 @@ export default class AuthService {
       err = e;
       message = err.message;
 
-      if (method === 'createToken' && message.includes(messages.invalidJwtSecret)) {
+      if (message.includes(messages.invalidJwtSecret)) {
         err.name = errorName.invalidJwtSecret;
       }
     }
