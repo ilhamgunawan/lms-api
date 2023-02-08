@@ -35,6 +35,11 @@ async function verifyCredentials(req: Request, res: Response, next: NextFunction
         message = messages.invalidToken;
         status = responseStatus.unauthorized;
       }
+
+      if (e.message.includes('jwt expired')) {
+        message = messages.tokenExpired;
+        status = responseStatus.unauthorized;
+      }
     }
 
     ErrorReporterService.controllerError({

@@ -8,6 +8,7 @@ export const messages = {
   invalidLogin: 'Username or password not match.',
   invalidJwtSecret: 'Jwt secret is invalid or undefined.',
   invalidToken: 'Invalid token.',
+  tokenExpired: 'Token expired.',
 };
 
 export const responseStatus = {
@@ -30,4 +31,5 @@ export const errorName = {
   invalidLogin: 'InvalidLogin',
   invalidJwtSecret: 'InvalidJwtSecret',
   invalidToken: 'InvalidToken',
+  tokenExpired: 'TokenExpired',
 };
