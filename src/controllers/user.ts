@@ -121,4 +121,46 @@ export default class UserController {
       });
     }
   }
+
+  static async getAllUsers(req: Request, res: Response) {
+    const trxProvider = knex.transactionProvider();
+    const trx = await trxProvider();
+  
+    try {
+      const query = req.query;
+      const offset = query.offset ? parseInt(query.offset as string) : 0;
+      const limit = query.limit ? parseInt(query.limit as string) : 15;
+      const result: Record<string, any> = {};
+
+      const getAllUsersResult = await UserAccountService.getAll(trx, {
+        offset,
+        limit,
+      });
+
+      if (getAllUsersResult.err) throw getAllUsersResult.err;
+
+      const countAllUsers = await UserAccountService.countAll(trx);
+      
+      if (countAllUsers.err) throw countAllUsers.err;
+
+      result.data = {
+        users: getAllUsersResult.data,
+        total_current: getAllUsersResult.data?.length,
+        total_all: parseInt(countAllUsers.data.count),
+        offset,
+        limit,
+      };
+  
+      return res.status(responseStatus.ok).send(result);
+    } catch(e) {
+      const errorHandler = new ErrorHandlerService();
+      return await errorHandler.controllerHandler({
+        req,
+        res,
+        trx,
+        e,
+        controller: `${this.controller}.getAllUsers`,
+      });
+    }
+  }
 }

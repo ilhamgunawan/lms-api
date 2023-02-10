@@ -19,6 +19,11 @@ interface CreateUserAccount {
   date_of_birth: string
 }
 
+interface GetAllUserAccount {
+  offset: number
+  limit: number
+}
+
 interface Result<T> {
   data?: T
   err?: Error
@@ -51,6 +56,38 @@ export default class UserAccountService {
       .catch(e => {
         trx.rollback();
         return this.errorHandler<UserAccount>(e, 'getById');
+      });
+  }
+
+  static async getAll(trx: Knex.Transaction, params: GetAllUserAccount): Promise<Result<UserAccount[]>> {
+    const { id, first_name, last_name, gender, date_of_birth } = this.columns;
+    return trx.select(id, first_name, last_name, gender, date_of_birth)
+      .from(this.table)
+      .offset(params.offset)
+      .limit(params.limit)
+      .returning<UserAccount[]>([
+        id,
+        first_name,
+        last_name,
+        gender,
+        date_of_birth,
+      ])
+      .then((rows) => ({ data: rows }))
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserAccount[]>(e, 'getAll');
+      });
+  }
+
+  static async countAll(trx: Knex.Transaction): Promise<Result<any>> {
+    return trx.count({ count: '*' })
+      .from(this.table)
+      .then((rows) => {
+        return { data: rows[0] }
+      })
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler(e, 'countAll');
       });
   }
 

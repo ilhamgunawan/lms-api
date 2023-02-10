@@ -28,6 +28,7 @@ router.post('/api/v1/auth/validate', AuthController.validateToken.bind(AuthContr
 // router.patch('/api/v1/users/:id/update', verifyToken, userController.updateUser);
 // router.delete('/api/v1/users/:id/delete', verifyToken, userController.deleteUser);
 router.get('/api/v1/users/:id', verifyCredentials, UserController.getUserById.bind(UserController));
+router.get('/api/v1/users', verifyCredentials, UserController.getAllUsers.bind(UserController));
 router.post('/api/v1/users/create', verifyCredentials, UserController.createUser.bind(UserController));
 
 /**
