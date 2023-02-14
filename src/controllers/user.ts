@@ -143,6 +143,8 @@ export default class UserController {
       
       if (countAllUsers.err) throw countAllUsers.err;
 
+      await trx.commit();
+
       result.data = {
         users: getAllUsersResult.data,
         total_current: getAllUsersResult.data?.length,
@@ -150,6 +152,14 @@ export default class UserController {
         offset,
         limit,
       };
+
+      const total_page = result.data.total_all / limit;
+      
+      result.data.total_page = total_page;
+
+      if (total_page % 2 !== 0) {
+        result.data.total_page = Math.floor(total_page) + 1;
+      }
   
       return res.status(responseStatus.ok).send(result);
     } catch(e) {
