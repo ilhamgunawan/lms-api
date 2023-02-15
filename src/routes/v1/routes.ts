@@ -25,11 +25,11 @@ router.post('/api/v1/auth/validate', AuthController.validateToken.bind(AuthContr
 // router.get('/api/v1/users', verifyToken, userController.getAllUser);
 // router.get('/api/v1/users/:id', verifyToken, userController.getUserByID);
 // router.post('/api/v1/users/create', verifyToken, userController.createUser);
-// router.delete('/api/v1/users/:id/delete', verifyToken, userController.deleteUser);
 router.get('/api/v1/users/:id', verifyCredentials, UserController.getUserById.bind(UserController));
 router.get('/api/v1/users', verifyCredentials, UserController.getAllUsers.bind(UserController));
 router.post('/api/v1/users/create', verifyCredentials, UserController.createUser.bind(UserController));
 router.put('/api/v1/users/:id/update', verifyCredentials, UserController.updateUser.bind(UserController));
+router.delete('/api/v1/users/:id/delete', verifyCredentials, UserController.deleteUser.bind(UserController));
 
 /**
  * Invalid Route

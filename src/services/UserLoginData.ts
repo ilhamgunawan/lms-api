@@ -52,6 +52,24 @@ export default class UserLoginDataService {
       });
   }
 
+  static async delete(trx: Knex.Transaction, user_id: string): Promise<Result<UserLoginData>> {
+    return trx.delete()
+      .into(this.table)
+      .where({ user_id })
+      .returning<UserLoginData[]>([
+        this.columns.id, 
+        this.columns.user_id, 
+        this.columns.user_name,
+      ])
+      .then((rows) => {
+        return { data: rows[0] };
+      })
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserLoginData>(e, 'delete');
+      });
+  }
+
   static async getByUsername(trx: Knex.Transaction, user_name: string): Promise<Result<UserLoginData>> {
     return trx.select(this.columns.user_id, this.columns.user_name, this.columns.psw_hash)
       .from(this.table)

@@ -138,6 +138,26 @@ export default class UserAccountService {
       });
   }
 
+  static async delete(trx: Knex.Transaction, user_id: string): Promise<Result<UserAccount>> {
+    return trx.delete()
+      .into(this.table)
+      .where({ id: user_id })
+      .returning<UserAccount[]>([
+        this.columns.id, 
+        this.columns.first_name,
+        this.columns.last_name, 
+        this.columns.gender, 
+        this.columns.date_of_birth
+      ])
+      .then((rows) => {
+        return { data: rows[0] };
+      })
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserAccount>(e, 'delete');
+      });
+  }
+
   private static errorHandler<T>(e: unknown, method: string): Result<T> {
     let err = new Error();
     let message = messages.general;

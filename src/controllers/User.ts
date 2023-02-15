@@ -140,6 +140,40 @@ export default class UserController {
     }
   }
 
+  static async deleteUser(req: Request, res: Response) {
+    const trxProvider = knex.transactionProvider();
+    const trx = await trxProvider();
+  
+    try {
+      const user_id = req.params.id;
+      const result: Record<string, any> = {};
+
+      const userLoginDeleteResult = await UserLoginDataService.delete(trx, user_id);
+      if (userLoginDeleteResult.err) throw userLoginDeleteResult.err;
+  
+      const userAccountDeleteResult = await UserAccountService.delete(trx, user_id);
+      if (userAccountDeleteResult.err) throw userAccountDeleteResult.err;
+
+      await trx.commit();
+
+      result.data = {
+        ...userAccountDeleteResult.data,
+      };
+      
+      return res.status(responseStatus.ok).send(result);
+  
+    } catch(e) {
+      const errorHandler = new ErrorHandlerService();
+      return await errorHandler.controllerHandler({
+        req,
+        res,
+        trx,
+        e,
+        controller: `${this.controller}.deleteUser`,
+      });
+    }
+  }
+
   static async getUserById(req: Request, res: Response) {
     const trxProvider = knex.transactionProvider();
     const trx = await trxProvider();
