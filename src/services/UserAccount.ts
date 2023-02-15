@@ -113,6 +113,31 @@ export default class UserAccountService {
       });
   }
 
+  static async update(trx: Knex.Transaction, user: UserAccount): Promise<Result<UserAccount>> {
+    return trx.update({
+        first_name: user.first_name,
+        last_name: user.last_name,
+        gender: user.gender,
+        date_of_birth: user.date_of_birth,
+      })
+      .into(this.table)
+      .where({ id: user.id })
+      .returning<UserAccount[]>([
+        this.columns.id, 
+        this.columns.first_name, 
+        this.columns.last_name, 
+        this.columns.gender, 
+        this.columns.date_of_birth
+      ])
+      .then((rows) => {
+        return { data: rows[0] };
+      })
+      .catch(e => {
+        trx.rollback();
+        return this.errorHandler<UserAccount>(e, 'update');
+      });
+  }
+
   private static errorHandler<T>(e: unknown, method: string): Result<T> {
     let err = new Error();
     let message = messages.general;

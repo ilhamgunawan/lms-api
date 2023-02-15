@@ -84,6 +84,62 @@ export default class UserController {
     }
   }
 
+  static async updateUser(req: Request, res: Response) {
+    const trxProvider = knex.transactionProvider();
+    const trx = await trxProvider();
+  
+    try {
+      const user_id = req.params.id;
+      const body = req.body;
+      const missingFields = [];
+      const result: Record<string, any> = {};
+      
+      if (!body.first_name) missingFields.push('first_name');
+      if (!body.last_name) missingFields.push('last_name');
+      if (!body.gender) missingFields.push('gender');
+      if (!body.date_of_birth) missingFields.push('date_of_birth');
+      
+      if (missingFields.length) {
+        const err = new Error();
+        err.name = errorName.missingFields;
+        err.message = JSON.stringify(missingFields);
+        throw err;
+      };
+  
+      const userAccountUpdateResult = await UserAccountService.update(trx, {
+        id: user_id,
+        first_name: body.first_name,
+        last_name: body.last_name,
+        gender: body.gender,
+        date_of_birth: body.date_of_birth,
+      });
+  
+      if (userAccountUpdateResult.err) {
+        throw userAccountUpdateResult.err;
+      }
+  
+      if (userAccountUpdateResult.data) {
+        await trx.commit();
+  
+        result.data = {
+          ...userAccountUpdateResult.data,
+        };
+      }
+      
+      return res.status(responseStatus.ok).send(result);
+  
+    } catch(e) {
+      const errorHandler = new ErrorHandlerService();
+      return await errorHandler.controllerHandler({
+        req,
+        res,
+        trx,
+        e,
+        controller: `${this.controller}.updateUser`,
+      });
+    }
+  }
+
   static async getUserById(req: Request, res: Response) {
     const trxProvider = knex.transactionProvider();
     const trx = await trxProvider();
